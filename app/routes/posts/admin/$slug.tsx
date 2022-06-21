@@ -1,8 +1,12 @@
-import { Form, useActionData, useTransition } from "@remix-run/react";
+import { Form, useActionData, useLoaderData, useTransition } from "@remix-run/react";
 import { ActionFunction, json, LoaderFunction, redirect } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
-import { createPost } from "~/models/post.server";
+import { createPost, getPost } from "~/models/post.server";
 import { requireAdminUser } from "~/session.server";
+
+type LoaderData = {
+  post : Awaited<ReturnType<typeof getPost>>
+}
 
 type ActionData = {
     title: null | string,
@@ -14,8 +18,11 @@ export const loader: LoaderFunction =async ({request, params}) => {
     await requireAdminUser(request)
     if(params.slug === 'new')
       return json({})
-    else 
-      return json({post: null})
+    else {
+      invariant(params.slug, 'slug is required')
+      const post = await getPost(params.slug)
+      return json<LoaderData>({post})
+    }
 }
 
 export const action: ActionFunction = async ({request, params})=>{
@@ -55,13 +62,15 @@ export const action: ActionFunction = async ({request, params})=>{
 const inputClassName = `w-full rounded border border-gray-500 px-2 py-1 text-lg`;
 
 const NewPost = () => {
+  const {post} = useLoaderData() as LoaderData
+
   const errors = useActionData() as ActionData
 
   const transition = useTransition()
   const isCreating = Boolean(transition.submission)
 
   return (
-    <Form method="post" >
+    <Form method="post" key={post?.slug ?? 'new'}>
       <p>
         <label>
           Post Title:{" "}
@@ -70,7 +79,7 @@ const NewPost = () => {
             type="text"
             name="title"
             className={inputClassName}
-            
+            defaultValue= {post?.title}
           />
         </label>
       </p>
@@ -82,7 +91,7 @@ const NewPost = () => {
             type="text"
             name="slug"
             className={inputClassName}
-             
+            defaultValue={post?.slug}
           />
         </label>
       </p>
@@ -96,7 +105,7 @@ const NewPost = () => {
           rows={20}
           name="markdown"
           className={`${inputClassName} font-mono`}
-           
+          defaultValue={post?.markdown}
         />
       </p>
       <p className="text-right">
