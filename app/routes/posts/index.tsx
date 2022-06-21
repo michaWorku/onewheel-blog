@@ -17,7 +17,7 @@ const PostRoutes = () => {
   return (
     <main>
         <h1>Posts</h1>
-        <Link to='admin' className="text-red-600 underline">
+        <Link to='admin' prefetch="intent" className="text-red-600 underline">
             Admin
         </Link>
         <ul>
@@ -25,6 +25,7 @@ const PostRoutes = () => {
                 posts.map((post)=>(
                     <li key= {post.slug}>
                         <Link 
+                            prefetch="intent"
                             to={post.slug}
                             className='text-blue-600 underline'
                         >
