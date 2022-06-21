@@ -1,6 +1,8 @@
 import { Post } from "@prisma/client"
 import { prisma } from "~/db.server"
 
+export type {Post}
+
 export const getPostListings =async () => {
     return prisma.post.findMany({
         select:{

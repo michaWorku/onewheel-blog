@@ -1,11 +1,11 @@
-import { Form, useActionData, useLoaderData, useTransition } from "@remix-run/react";
+import { Form, useActionData, useCatch, useLoaderData, useParams, useTransition } from "@remix-run/react";
 import { ActionFunction, json, LoaderFunction, redirect } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
-import { createPost, deletePost, getPost, updatePost } from "~/models/post.server";
+import { createPost, deletePost, getPost, Post, updatePost } from "~/models/post.server";
 import { requireAdminUser } from "~/session.server";
 
 type LoaderData = {
-  post : Awaited<ReturnType<typeof getPost>>
+  post? : Post
 }
 
 type ActionData = {
@@ -17,10 +17,11 @@ type ActionData = {
 export const loader: LoaderFunction =async ({request, params}) => {
     await requireAdminUser(request)
     if(params.slug === 'new')
-      return json({})
+      return json<LoaderData>({})
     else {
       invariant(params.slug, 'slug is required')
       const post = await getPost(params.slug)
+      if(!post) throw new Response('post not found', {status: 404})
       return json<LoaderData>({post})
     }
 }
@@ -144,6 +145,20 @@ const NewPost = () => {
       </div>
     </Form>
   )
+}
+
+export const CatchBoundary = ()=>{
+  const caught = useCatch()
+  const params = useParams()
+
+  if(caught.status === 404){
+    return (
+      <div>Uh oh The post with slug "{params.slug}" is not found</div>
+    )
+  }
+
+  throw new Error(`Unsupported thrown response status code: ${caught.status}`)
+
 }
 
 export default NewPost
