@@ -30,7 +30,7 @@ export const meta: MetaFunction = () => ({
 
 type LoaderData = {
   user: Awaited<ReturnType<typeof getUser>>,
-  ENV: any
+  ENV: ReturnType<typeof getEnv>
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
