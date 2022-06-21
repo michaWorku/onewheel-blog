@@ -10,12 +10,15 @@ type ActionData = {
     markdown: null | string
 } | undefined
 
-export const loader: LoaderFunction =async ({request}) => {
+export const loader: LoaderFunction =async ({request, params}) => {
     await requireAdminUser(request)
-    return json({})
+    if(params.slug === 'new')
+      return json({})
+    else 
+      return json({post: null})
 }
 
-export const action: ActionFunction = async ({request})=>{
+export const action: ActionFunction = async ({request, params})=>{
     await requireAdminUser(request)
 
     const formData = await request.formData()
@@ -39,8 +42,13 @@ export const action: ActionFunction = async ({request})=>{
     invariant(typeof slug === 'string', 'slug must be string')
     invariant(typeof markdown === 'string', 'markdown must be string')
 
-    await createPost({title, slug, markdown})
-
+    if(params.slug === 'new'){
+      await createPost({title, slug, markdown})
+    }
+    else{
+      //Todo
+    }
+      
     return redirect('/posts/admin')
 }
 
