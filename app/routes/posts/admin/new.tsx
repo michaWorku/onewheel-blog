@@ -1,5 +1,5 @@
-import { Form } from "@remix-run/react";
-import { ActionFunction, redirect } from "@remix-run/server-runtime";
+import { Form, useActionData } from "@remix-run/react";
+import { ActionFunction, json, redirect } from "@remix-run/server-runtime";
 import { createPost } from "~/models/post.server";
 
 export const action: ActionFunction = async ({request})=>{
@@ -8,6 +8,18 @@ export const action: ActionFunction = async ({request})=>{
     const title= formData.get('title')
     const slug= formData.get('slug')
     const markdown= formData.get('markdown')
+    
+    const errors = {
+        title: title? null: 'Title is required',
+        slug: slug? null: 'Slug is requried',
+        markdown: markdown? null: 'Markdown is required'
+    }
+    const HasErrors = Object.values(errors).some((errorMessage)=>errorMessage)
+
+    if(HasErrors){
+        return json(errors)
+    }
+
     await createPost({title, slug, markdown})
 
     return redirect('/posts/admin')
@@ -16,13 +28,14 @@ export const action: ActionFunction = async ({request})=>{
 const inputClassName = `w-full rounded border border-gray-500 px-2 py-1 text-lg`;
 
 const NewPost = () => {
-    
+    const errors = useActionData()
+
   return (
     <Form method="post" >
       <p>
         <label>
           Post Title:{" "}
-           
+           {errors?.title ? <em className="text-red-600">{errors.title}</em> : null}
           <input
             type="text"
             name="title"
@@ -34,7 +47,7 @@ const NewPost = () => {
       <p>
         <label>
           Post Slug:{" "}
-           
+          {errors?.slug? <em className="text-red-600">{errors.slug}</em> : null}
           <input
             type="text"
             name="slug"
@@ -46,7 +59,7 @@ const NewPost = () => {
       <p>
         <label htmlFor="markdown">
           Markdown:{" "}
-           
+          {errors?.markdown? <em className="text-red-600">{errors.markdown}</em> : null}
         </label>
         <textarea
           id="markdown"
