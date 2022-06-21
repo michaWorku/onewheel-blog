@@ -1,7 +1,7 @@
 import { Form, useActionData, useLoaderData, useTransition } from "@remix-run/react";
 import { ActionFunction, json, LoaderFunction, redirect } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
-import { createPost, getPost, updatePost } from "~/models/post.server";
+import { createPost, deletePost, getPost, updatePost } from "~/models/post.server";
 import { requireAdminUser } from "~/session.server";
 
 type LoaderData = {
@@ -27,8 +27,15 @@ export const loader: LoaderFunction =async ({request, params}) => {
 
 export const action: ActionFunction = async ({request, params})=>{
     await requireAdminUser(request)
+    invariant(params.slug, 'Slug is required')
 
     const formData = await request.formData()
+
+    const intent = formData.get('intent')
+    if(intent === 'delete'){
+      await deletePost(params.slug)
+      return redirect('/posts/admin')
+    }
 
     const title= formData.get('title')
     const slug= formData.get('slug')
@@ -53,7 +60,6 @@ export const action: ActionFunction = async ({request, params})=>{
       await createPost({title, slug, markdown})
     }
     else{
-      invariant(params.slug, 'Slug is required')
       await updatePost(params.slug,{title, slug, markdown})
     }
       
@@ -70,6 +76,7 @@ const NewPost = () => {
   const transition = useTransition()
   const isCreating = transition.submission?.formData.get('intent') === 'create'
   const isUpdating = transition.submission?.formData.get('intent') === 'update'
+  const isDeleting = transition.submission?.formData.get('intent') === 'delete'
   const isNewPost = !post
 
   return (
@@ -111,18 +118,30 @@ const NewPost = () => {
           defaultValue={post?.markdown}
         />
       </p>
-      <p className="text-right">
+      <div className="flex justify-end gap-4">
+        {
+          isNewPost? null : 
+          <button
+            type="submit"
+            name='intent'
+            value="delete"
+            className="rounded bg-red-500 py-2 px-4 text-white hover:bg-red-600 focus:bg-red-400 disabled:bg-red-300"
+            disabled={isDeleting }
+           >
+           {isDeleting? 'Deleting...': 'Delete'} 
+         </button>
+        }
         <button
-         type="submit"
-         name='intent'
-         value={isNewPost? 'create': 'update'}
-         className="rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
-         disabled={isCreating || isUpdating}
-       >
+          type="submit"
+          name='intent'
+          value={isNewPost? 'create': 'update'}
+          className="rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
+          disabled={isCreating || isUpdating}
+         >
           {isNewPost? (isCreating ? 'Creating...': 'Create Post') : null}
           {isNewPost? null: (isUpdating? 'Updaing...': 'Update')}  
         </button>
-      </p>
+      </div>
     </Form>
   )
 }

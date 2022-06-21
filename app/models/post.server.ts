@@ -25,3 +25,7 @@ export const createPost = (post: Pick<Post, 'title' | 'slug' | 'markdown'>)=>{
 export const updatePost = (slug: string, post: Pick<Post, 'title' | 'slug' | 'markdown'>)=>{
     return prisma.post.update({data: post, where: {slug}})
 }
+
+export const deletePost = (slug: string)=>{
+    return prisma.post.delete({where: {slug}})
+}
