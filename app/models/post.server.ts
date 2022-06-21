@@ -16,3 +16,7 @@ export const getPosts = () => {
 export const getPost = (slug:string) => {
     return prisma.post.findUnique({where:{slug}})
 }
+
+export const createPost = (post)=>{
+    return prisma.post.create({data: post})
+}
