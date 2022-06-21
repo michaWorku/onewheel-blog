@@ -1,18 +1,10 @@
 import { Link, useLoaderData } from "@remix-run/react"
 import { json, LoaderFunction } from "@remix-run/server-runtime"
+import { getPosts } from "~/models/post.server"
 
 
-export const loader: LoaderFunction =()=>{
-    const posts = [
-        {
-            slug: 'my-first-post',
-            title: 'My First Post'
-        },
-        {
-            slug: 'trail-riding-with-onewheel',
-            title: 'Trail Riding With Onewheel'
-        }
-    ]
+export const loader: LoaderFunction = async()=>{
+    const posts = await getPosts()
 
     return json({posts})
 }
