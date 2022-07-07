@@ -20,11 +20,11 @@ export const getPost = (slug:string) => {
     return prisma.post.findUnique({where:{slug}})
 }
 
-export const createPost = (post: Pick<Post, 'title' | 'slug' | 'markdown'>)=>{
+export const createPost = (post: Pick<Post, 'title' | 'slug' | 'markdown' | 'editorjs'>)=>{
     return prisma.post.create({data: post})
 }
 
-export const updatePost = (slug: string, post: Pick<Post, 'title' | 'slug' | 'markdown'>)=>{
+export const updatePost = (slug: string, post: Pick<Post, 'title' | 'slug' | 'markdown' | 'editorjs'>)=>{
     return prisma.post.update({data: post, where: {slug}})
 }
 
