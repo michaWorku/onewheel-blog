@@ -1,6 +1,9 @@
 import { Form, useActionData, useCatch, useLoaderData, useParams, useTransition } from "@remix-run/react";
 import { ActionFunction, json, LoaderFunction, redirect } from "@remix-run/server-runtime";
+import { useState } from "react";
+import { ClientOnly } from "remix-utils";
 import invariant from "tiny-invariant";
+import Editor from "~/components/editor.client";
 import { createPost, deletePost, getPost, Post, updatePost } from "~/models/post.server";
 import { requireAdminUser } from "~/session.server";
 
@@ -11,7 +14,8 @@ type LoaderData = {
 type ActionData = {
     title: null | string,
     slug : null | string,
-    markdown: null | string
+    markdown: null | string,
+    editorjs: null | string
 } | undefined
 
 export const loader: LoaderFunction =async ({request, params}) => {
@@ -41,11 +45,13 @@ export const action: ActionFunction = async ({request, params})=>{
     const title= formData.get('title')
     const slug= formData.get('slug')
     const markdown= formData.get('markdown')
+    let editorjs = formData.get('editorjs');
     
     const errors: ActionData = {
         title: title? null: 'Title is required',
         slug: slug? null: 'Slug is requried',
-        markdown: markdown? null: 'Markdown is required'
+        markdown: markdown? null: 'Markdown is required',
+        editorjs: editorjs? null: 'file required'
     }
     const HasErrors = Object.values(errors).some((errorMessage)=>errorMessage)
 
@@ -56,12 +62,13 @@ export const action: ActionFunction = async ({request, params})=>{
     invariant(typeof title === 'string', 'title must be string')
     invariant(typeof slug === 'string', 'slug must be string')
     invariant(typeof markdown === 'string', 'markdown must be string')
+    invariant(typeof editorjs === 'string', 'editorjs must be string')
 
     if(params.slug === 'new'){
-      await createPost({title, slug, markdown})
+      await createPost({title, slug, markdown, editorjs})
     }
     else{
-      await updatePost(params.slug,{title, slug, markdown})
+      await updatePost(params.slug,{title, slug, markdown, editorjs})
     }
       
     return redirect('/posts/admin')
@@ -80,6 +87,8 @@ const NewPost = () => {
   const isDeleting = transition.submission?.formData.get('intent') === 'delete'
   const isNewPost = !post
 
+  const [savedData, setSavedData] = useState('{}');
+  
   return (
     <Form method="post" key={post?.slug ?? 'new'}>
       <p>
@@ -111,6 +120,16 @@ const NewPost = () => {
           Markdown:{" "}
           {errors?.markdown? <em className="text-red-600">{errors.markdown}</em> : null}
         </label>
+        <br />
+        <ClientOnly>
+          {() => (
+            <Editor
+              previousData={JSON.stringify(post?.editorjs)}
+              saveOutput={savedData}
+              save={(savedData: any) => setSavedData(savedData)}
+            />
+          )}
+        </ClientOnly>
         <textarea
           id="markdown"
           rows={20}
@@ -142,6 +161,12 @@ const NewPost = () => {
           {isNewPost? (isCreating ? 'Creating...': 'Create Post') : null}
           {isNewPost? null: (isUpdating? 'Updaing...': 'Update')}  
         </button>
+        <input
+          defaultValue={JSON.stringify(post?.editorjs)}
+          name='editorjs'
+          value={savedData}
+          style={{opacity: 0}}
+        ></input>
       </div>
     </Form>
   )
