@@ -5,23 +5,6 @@ import  {EDITOR_JS_TOOLS}  from '~/constants';
 import { createReactEditorJS } from 'react-editor-js';
 const ReactEditorJS = createReactEditorJS();
 
-// Imports for editorjs plugins
-// import Embed from '@editorjs/embed';
-// import Table from '@editorjs/table';
-// import List from '@editorjs/list';
-// import Warning from '@editorjs/warning';
-// import Code from '@editorjs/code';
-// import LinkTool from '@editorjs/link';
-// import ImageTool from '@editorjs/image';
-// import Raw from '@editorjs/raw';
-// import Header from '@editorjs/header';
-// import Quote from '@editorjs/quote';
-// import Marker from '@editorjs/marker';
-// import CheckList from '@editorjs/checklist';
-// import Delimiter from '@editorjs/delimiter';
-// import InlineCode from '@editorjs/inline-code';
-// import SimpleImage from '@editorjs/simple-image';
-// import TextVariantTune from '@editorjs/text-variant-tune';
 
 const inputClassName = `w-full h-full rounded border border-gray-500 px-2 py-1 text-lg`;
 
@@ -159,20 +142,20 @@ const defaultValue={
   ]
 }
 
-// interface EditorCore {
-//   destroy(): Promise<void>
+interface EditorCore {
+  destroy(): Promise<void>
 
-//   clear(): Promise<void>
+  clear(): Promise<void>
 
-//   save(): Promise<OutputData>
+  save(): Promise<typeof defaultValue>
 
-//   render(data: OutputData): Promise<void>
-// }
+  render(data: typeof defaultValue): Promise<void>
+}
 
 export default function Editor(props: any) {
-  const editorCore = React.useRef(null);
-  const handleInitialize = React.useCallback((instance) => {
-    editorCore.current = instance;
+  const editorCore = React.useRef<EditorCore | null>(null);
+  const handleInitialize = React.useCallback((instance: EditorCore) => {
+    editorCore.current = instance
   }, []);
 
   const handleSave = React.useCallback(async () => {
