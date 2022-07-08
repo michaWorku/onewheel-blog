@@ -176,7 +176,7 @@ export default function Editor(props: any) {
   }, []);
 
   const handleSave = React.useCallback(async () => {
-    const savedData = await editorCore.current.save();
+    const savedData = await editorCore?.current?.save();
     props.save(JSON.stringify(savedData));
   }, []);
 
