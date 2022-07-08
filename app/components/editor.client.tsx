@@ -1,9 +1,10 @@
 import React from 'react';
 
 // Allow editorjs init
+import  {EDITOR_JS_TOOLS}  from '~/constants';
 import { createReactEditorJS } from 'react-editor-js';
 const ReactEditorJS = createReactEditorJS();
-import  {EDITOR_JS_TOOLS}  from '~/constants';
+
 // Imports for editorjs plugins
 // import Embed from '@editorjs/embed';
 // import Table from '@editorjs/table';
