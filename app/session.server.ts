@@ -65,7 +65,7 @@ export async function requireUser(request: Request) {
 
 export const requireAdminUser = async (request: Request)=>{
   const user = await requireUser(request)
-  if(user.email !== ENV.ADMIN_EMIAL){
+  if(user.email !== process.env.ADMIN_EMIAL){
     throw await logout(request)
   }
 
